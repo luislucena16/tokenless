@@ -1,9 +1,3 @@
-/*
-
----
-TODO: Use this resolver to work correctly with node_modules in all workspaces.
----
-
 const jsResolver = (path, options) => {
   const jsExtRegex = /\.js$/i
   const resolver = options.defaultResolver
@@ -20,4 +14,3 @@ const jsResolver = (path, options) => {
 }
 
 module.exports = jsResolver
-*/
