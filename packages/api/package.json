@@ -1,5 +1,5 @@
 {
-  "name": "@quick-starter/quick-starter-api",
+  "name": "@tokenless/tokenless-api",
   "packageManager": "yarn@4.9.2",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,7 +21,7 @@
     "build": "rm -rf dist && tsc --project tsconfig.build.json"
   },
   "dependencies": {
-    "@quick-starter/quick-starter-contract": "workspace:*",
+    "@tokenless/tokenless-contract": "workspace:*",
     "pino": "^8.16.1",
     "uuid": "^11.1.0",
     "ws": "8.17.1"
