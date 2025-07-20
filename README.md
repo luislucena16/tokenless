@@ -1,102 +1,59 @@
-# 🌙 Midnight Quick Starter Template
+# Tokenless
 
-> **Base template for blockchain projects on Midnight Network** - A complete and modern template for developing decentralized applications (dApps) with smart contracts, backend APIs, CLI tools, and user interfaces.
+**Private, Compliant Asset Tokenization on Midnight — No Public Tokens, Full Privacy**
 
-## 📋 Table of Contents
+---
 
-- [🎯 Description](#-description)
-- [✨ Features](#-features)
-- [🏗️ Architecture](#️-architecture)
-- [⚙️ System Requirements](#️-system-requirements)
-- [🚀 Installation](#-installation)
-- [📖 Basic Usage](#-basic-usage)
-- [🏛️ Project Structure](#️-project-structure)
-- [🔍 Quick Development Guide](#-quick-development-guide)
-- [🐳 Docker Services](#-docker-services)
-- [🚀 Running the Application](#-running-the-application)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
-- [🚀 Roadmap & Ideas for Improvement](#-roadmap-ideas-for-improvement)
+## 📌 Overview
 
-## 🎯 Description
+Tokenless is a natively Midnight-based asset tokenization system. It enables secure, verifiable, and private representation of investments and participations on-chain—without issuing public or transferable tokens. Zero-knowledge proofs (ZKPs) guarantee user privacy and regulatory compliance, preventing public exposure of balances, identities, or investment patterns.
 
-**Midnight Quick Starter** is a complete and modern template for developing blockchain applications on the Midnight network. This template provides a solid foundation with all the necessary tools to create dApps with smart contracts, APIs, user interfaces, and CLI tools.
+---
 
-### Use Cases
+## 🚀 Key Features
 
-- ✅ Complete dApp development on Midnight Network
-- ✅ Smart contract creation with Compact
-- ✅ Backend APIs for blockchain interaction
-- ✅ Modern user interfaces with React
-- ✅ CLI tools for development
-- ✅ Monorepo with optimized dependency management
+- **No public tokens:** No transferable tokens or public balance lists.
+- **Privacy by design:** All actions (investment, project creation, withdrawals) are protected by ZKPs.
+- **Regulatory compliance:** Supports zk-credentials for KYC, AML, and residency without exposing sensitive data.
+- **On-chain verifiability:** All investments and actions are cryptographically auditable and provable.
+- **Modular architecture:** Decoupled smart contracts, API, and UI, with privacy logic at every layer.
+- **Censorship resistance:** No central points of control or participant exposure.
+- **Refunds and flexible management:** Integrated refund mechanisms and project administration.
 
-## ✨ Features
+---
 
-- **🔧 Monorepo with Turbo** - Optimized build system and dependency management
-- **📝 TypeScript** - Complete static typing across all packages
-- **⚡ React + Vite** - Modern UI with hot reload
-- **🔒 Compact Contracts** - Smart contracts with Compact language
-- **🌐 REST/WebSocket API** - Backend for blockchain interaction
-- **🖥️ CLI Tools** - Command line tools
-- **🎨 Tailwind CSS** - Modern and responsive styles
-- **📏 ESLint + Prettier** - Clean and consistent code
+## 🛠️ Installation & Setup
 
-## 🏗️ Architecture
+### 1. Clone the repository
 
-```
-midnight-quick-starter/
-├── 📦 packages/
-│   ├── 🎨 ui/          # React + Vite Frontend
-│   ├── 🔧 api/         # Backend API
-│   ├── 🖥️ cli/         # CLI Tools
-│   └── 🔒 contract/    # Compact Contracts
-├── 🔧 compact/         # Compact Compiler
-└── 📚 docs/           # Documentation
+```sh
+git clone https://github.com/luislucena16/tokenless.git
+cd tokenless
 ```
 
-## ⚙️ System Requirements
+### 2. Verify Node.js version
 
-- **Node.js** >= 22.0.0
-- **Yarn** >= 4.9.2
-- **Git** >= 2.0.0
-- **Docker** (optional, for local testing)
-
-### Requirements Verification
-
-```bash
-node --version  # >= 22.0.0
-yarn --version  # >= 4.9.2
-git --version   # >= 2.0.0
+```sh
+node -v
+# Must be >= 22
 ```
 
-## 🚀 Installation
+### 3. Install dependencies
 
-### 1. Clone the Template
-
-```bash
-# Option 1: Use "Use this template" button on GitHub
-# Click "Use this template" → "Create a new repository"
-
-# Option 2: Fork the repository
-# Click "Fork" → Clone your forked repository
-git clone <your-forked-repository-url>
-cd midnight-quick-starter
-
-# Option 3: Clone directly (for contributing)
-git clone <repository-url>
-cd midnight-quick-starter
-```
-
-### 2. Install Dependencies
-
-```bash
+```sh
 yarn install
 ```
 
+### 4. Build all packages
+
+```sh
+yarn build:all
+```
+> _This command builds all workspaces: `packages/contract`, `packages/api`, `packages/cli`, and `packages/ui`._
+
 ### 3. Download and Prepare ZK Parameters (Required for Proofs)
 
-Before building, you need to fetch the zero-knowledge (ZK) parameters required by the proof server. This is done via a helper script that you should place in the CLI package:
+After building, you need to fetch the zero-knowledge (ZK) parameters required by the proof server. This is done via a helper script that you should place in the CLI package:
 
 ```bash
 # Move to the CLI package directory
@@ -121,212 +78,109 @@ chmod +x fetch-zk-params.sh
 >   it means the required parameters are missing.
 > - **This script is a workaround** to ensure your application works locally. The Midnight team is working on a more integrated solution for parameter management in the future.
 
-### 4. Configure Environment Variables
+### 6. Launch Midnight infrastructure (TestNet)
 
-You have two options to configure the `COMPACT_HOME` variable:
-
-**Option 1: System Environment Variable**
-
-**For current session only:**
-```bash
-export COMPACT_HOME=/path/to/compact
-```
-
-**For permanent setup:**
-
-**macOS/Linux:**
-```bash
-# Add to your shell profile
-echo 'export COMPACT_HOME=/path/to/compact' >> ~/.bashrc
-echo 'export COMPACT_HOME=/path/to/compact' >> ~/.zshrc
-
-# Reload your shell profile
-source ~/.bashrc  # or source ~/.zshrc
-```
-
-**Windows (PowerShell):**
-```powershell
-# Set for current user
-[Environment]::SetEnvironmentVariable("COMPACT_HOME", "/path/to/compact", "User")
-
-# Or set for current session
-$env:COMPACT_HOME = "/path/to/compact"
-```
-
-**Windows (Command Prompt):**
-```cmd
-# Set for current user
-setx COMPACT_HOME "/path/to/compact"
-
-# Or set for current session
-set COMPACT_HOME=/path/to/compact
-```
-
-**Option 2: .env File**
-```bash
-# Create .env file
-echo "COMPACT_HOME=/path/to/compact" > .env
-```
-
-### 5. Build All Packages
-
-```bash
-# Build all packages (creates necessary folders automatically)
-yarn build:all
-```
-
-> **Note:** The build process automatically creates the necessary folders (`keys` and `zkir`) that are required by the frontend. No manual folder creation is needed.
->
-> **What `yarn build:all` does:**
-> - Builds the contract package (compiles Compact contracts)
-> - Builds the API package (TypeScript compilation)
-> - Builds the CLI package (TypeScript compilation)
-> - Builds the UI package (Vite build with contract assets)
-> - Creates necessary folders for frontend compatibility
-
-## 🏛️ Project Structure
-
-### 📦 Main Packages
-
-#### `packages/ui/` - Frontend
-```
-ui/
-├── src/
-│   ├── components/     # React Components
-│   ├── hooks/         # Custom hooks
-│   ├── lib/           # Utilities
-│   ├── providers/     # Context providers
-│   └── assets/        # Static resources
-├── public/            # Public files
-└── dist/              # Production build
-```
-
-#### `packages/api/` - Backend API
-```
-api/
-├── src/
-│   ├── index.ts       # Entry point
-│   └── test/          # Tests
-└── dist/              # Compiled build
-```
-
-#### `packages/contract/` - Smart Contracts
-```
-contract/
-├── src/
-│   ├── quick-starter.compact  # Main contract
-│   ├── managed/               # Generated contracts
-│   └── index.ts              # Exports
-└── dist/                     # Compiled build
-```
-
-#### `packages/cli/` - CLI Tools
-```
-cli/
-├── src/
-│   ├── launcher/      # Network launchers
-│   ├── config.ts      # Configurations
-│   └── index.ts       # Entry point
-└── dist/              # Compiled build
-```
-
-### 🔧 Configuration
-
-- **`turbo.json`** - Monorepo configuration
-- **`package.json`** - Root dependencies and scripts
-- **`.eslintrc.js`** - Linting rules
-- **`tsconfig.json`** - TypeScript configuration
-
-## 🔍 Quick Development Guide
-
-### 🎯 Areas to Modify (Marked with TODO)
-
-To quickly find areas that need customization, search for `TODO` comments throughout the codebase:
-
-**Using your code editor's global search:**
-- **VS Code:** `Ctrl+Shift+F` (or `Cmd+Shift+F` on Mac) and search for `TODO`
-- **WebStorm/IntelliJ:** `Ctrl+Shift+F` and search for `TODO`
-- **Sublime Text:** `Ctrl+Shift+F` and search for `TODO`
-
-**Using command line:**
-```bash
-# Search for all TODO comments
-grep -r "TODO" .
-
-# Or search in specific packages
-grep -r "TODO" packages/contract/
-grep -r "TODO" packages/api/
-grep -r "TODO" packages/ui/
-grep -r "TODO" packages/cli/
-```
-
-### 📝 Key Files to Customize
-
-- **`packages/contract/src/quick-starter.compact`** - Your main smart contract
-- **`packages/contract/src/index.ts`** - Contract exports and logic
-- **`packages/api/src/index.ts`** - Backend API implementation
-- **`packages/cli/src/index.ts`** - CLI interaction logic
-- **`packages/ui/src/main.tsx`** - Main React application
-- **`packages/ui/src/components/`** - React components
-- **`packages/ui/src/hooks/`** - Custom React hooks
-- **`packages/ui/src/lib/`** - Utility functions
-- **`packages/ui/src/providers/`** - Context providers
-
-### 🚀 Development Workflow
-
-1. **Edit your contract** in `packages/contract/src/quick-starter.compact`
-2. **Build the contract** with `cd packages/contract && npx turbo run build`
-3. **Build other packages** as needed using individual build commands
-4. **Customize UI components** in `packages/ui/src/`
-5. **Implement API logic** in `packages/api/src/`
-
-## 🐳 Docker Services
-
-After building your packages, you can run the Infrastructure services using Docker:
-
-### Testnet Environment
-
-```bash
-cd packages/cli
+```sh
 docker compose -f testnet.yml up -d
 ```
+> _The `-d` flag runs containers in the background. You should see output like:_
+> ```
+>  ✔ Container tokenless-node          Started
+>  ✔ Container tokenless-proof-server  Started
+>  ✔ Container tokenless-indexer       Started
+> ```
 
-### Standalone Environment
+### 7. Configure and launch the UI
 
-```bash
-cd packages/cli
-docker compose -f standalone.yml up -d
+#### 7.1 Environment variables
+
+Create a `.env` file in `packages/ui` with:
+
+```
+VITE_NETWORK_ID=TestNet
+VITE_LOGGING_LEVEL=trace
 ```
 
-> **Note:** The `-d` flag runs containers in detached mode (background), so you can continue using your terminal.
+#### 7.2 Build and start
 
-You should see something like:
-```
-✔ Container quick-starter-proof-server  Started
-✔ Container quick-starter-node          Started  
-✔ Container quick-starter-indexer       Started
-```
-
-## 🚀 Running the Application
-
-### Start the UI
-
-```bash
-cd packages/ui
+```sh
+npx turbo run build
 yarn start
 ```
 
-The application will be available at `localhost:8080`
+Go to [http://localhost:8080](http://localhost:8080).
+
+---
+
+## 💡 How It Works
+
+1. **User connects their wallet** (Lace Midnight-compatible).
+2. **Frontend initializes providers** and connects to the contract (deploy or join).
+3. **Investments and actions** are performed using zero-knowledge proofs, never exposing sensitive data.
+4. **Contract state** (projects, balances, etc.) is queried and updated in real time using observables.
+5. **The UI never accesses or displays private data:** everything is managed via ZKPs and controlled access logic.
+
+---
+
+## 🔒 Privacy & Compliance
+
+- **ZKPs for every interaction:** All operations require zero-knowledge proofs.
+- **No public balances:** No transferable tokens or investor lists.
+- **Demonstrable compliance:** Users can invest and withdraw without disclosing their data.
+- **No pattern exposure:** Neither amount nor frequency of investment is public.
+
+---
+
+## 🧪 Development Commands
+
+- **Install dependencies:** `yarn install`
+- **Build all:** `yarn build:all`
+- **Download ZK params (one-liner):**
+  ```sh
+  cd packages/cli && \
+  curl -O https://raw.githubusercontent.com/bricktowers/midnight-proof-server/main/fetch-zk-params.sh && \
+  chmod +x fetch-zk-params.sh && \
+  ./fetch-zk-params.sh
+  ```
+- **Launch infrastructure:** `docker compose -f testnet.yml up -d`
+- **Build UI:** `npx turbo run build`
+- **Start UI:** `yarn start`
+
+---
+
+## 📂 Project Structure
+
+```
+tokenless/
+  packages/
+    contract/   # Smart contracts (Compact)
+    api/        # API and integration logic
+    cli/        # Infrastructure and scripts
+    ui/         # React + Vite frontend
+```
+
+---
+
+## 🧱 Tech Stack
+
+- **Midnight Network** (blockchain & ZKPs)
+- **Compact** (smart contract language)
+- **React + Vite** (frontend)
+- **Yarn + TurboRepo** (monorepo & dependencies)
+- **Docker** (local/testnet infrastructure)
+- **Pino** (logging)
+- **RxJS** (API observables)
+
+---
 
 ## 🤝 Contributing
 
 ### Contribution Guidelines
 
-This is a template designed to be used as a starting point for new projects. You can:
+This repository is meant to be forked as a starting point for new developments. You can:
 
-1. **Use as Template** - Click "Use this template" to create a new repository
-2. **Fork** the repository for your own project
-3. **Contribute** - Any PR is welcome to improve the template
+1. **Fork** the repository for your own project
+2. **Contribute** - Any PR is welcome to improve the template
 
 If contributing:
 1. **Fork** the repository
@@ -354,52 +208,26 @@ test: tests
 chore: maintenance tasks
 ```
 
-## 📄 License
+## 📝 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## 🚀 Roadmap & Ideas for Improvement
+## 🗺️ Roadmap
 
-This template is designed to be a living project and welcomes suggestions and contributions for new features and improvements. Here are some ideas and known areas for future enhancement:
-
-- [ ] **Integrated ZK Parameter Management:**  
-  Instead of requiring a manual script, the ZK parameters could be downloaded automatically as part of the Docker image or build process.  
-  The infrastructure could check for missing parameters and fetch them on demand.
-
-- [x] **Better Developer Onboarding:**  
-  Add interactive setup scripts or a CLI wizard for first-time setup.  
-  Provide more example contracts, API endpoints, and UI components.
-
-- [x] **Automated Environment Checks:**  
-  Add pre-build checks for required tools, environment variables, and folder structure.
-
-- [ ] **Improved Error Handling:**  
-  More descriptive error messages and troubleshooting guides for common issues.
-
-- [ ] **Template Customization Tools:**  
-  Scripts to easily rename the template, update package names, and clean up example files.
-
-- [ ] **CI/CD Integration:**  
-  Add GitHub Actions or other CI pipelines for automated testing, linting, and deployment.
-
-- [ ] **Documentation Enhancements:**  
-  More diagrams, architecture overviews, and real-world usage examples.
-
-- [x] **Community Feedback:**  
-  Encourage users to open issues or discussions for feature requests and pain points.
-
-- [ ] **Unified CLI/Library for Project Management:**  
-  Create a library or CLI tool to automate all setup, configuration, and project management from a single command (e.g., midnight-quick-starter init).
-
-- [x] **Basic Hello World Contract Validation:**  
-  Add a minimal contract and test that simply sets and reads a "Hello World" message to validate that the toolchain and build are working correctly.
-
-- [ ] **Lace Beta Wallet Integration:**  
-  Add support and documentation for integrating with Lace Beta Wallet for user authentication and transaction signing in the UI.
-
-> **Have an idea?** Open an issue or pull request to help make this template even better!
-
----
+- [ ] Advanced zk-credential integration for compliance with KYC
+- [ ] Improved UI/UX for private onboarding
+- [ ] Add new Investor and Issuer sections (portfolio, tx history, properties invested, dashboard)
+- [ ] Support for more wallets
+- [ ] Contract audit and security testing
+- [ ] Extended documentation and integration examples
+- [ ] Support for multiple credential issuers
+- [ ] zk-credential revocation system
+- [ ] Real-time ROI tracking with privacy-preserving data
+- [ ] Private messaging between investor and issuer
+- [ ] Developer SDK with ZK templates
+- [ ] Monitoring & analytics with privacy focus
+- [ ] Secondary market controls for issuers
+- [ ] Issuer notifications and compliance alerts
 
 ## 🆘 Support
 
