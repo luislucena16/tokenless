@@ -1,5 +1,5 @@
 {
-  "name": "@quick-starter/quick-starter-cli",
+  "name": "@tokenless/tokenless-cli",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
@@ -14,8 +14,8 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@quick-starter/quick-starter-api": "workspace:*",
-    "@quick-starter/quick-starter-contract": "workspace:*",
+    "@tokenless/tokenless-api": "workspace:*",
+    "@tokenless/tokenless-contract": "workspace:*",
     "pino": "^8.16.1",
     "ws": "^8.14.2"
   },

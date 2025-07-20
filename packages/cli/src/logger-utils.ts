@@ -1,9 +1,3 @@
-/*
-
----
-TODO: Only for structure. Use this debbug level to see all detailed logs.
----
-
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 import pinoPretty from 'pino-pretty';
@@ -31,4 +25,3 @@ export const createLogger = async (logPath: string): Promise<pino.Logger> => {
     ]),
   );
 };
-*/
