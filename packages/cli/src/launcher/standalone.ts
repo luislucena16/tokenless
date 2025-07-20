@@ -1,8 +1,3 @@
-/*
----
-TODO: Standalone config - you can use this or continue following similar implementation
----
-
 import { createLogger } from '../logger-utils.js';
 import path from 'node:path';
 import { run } from '../index.js';
@@ -16,4 +11,3 @@ const dockerEnv = new DockerComposeEnvironment(path.resolve(currentDir, '..'), '
   .withWaitStrategy('graphql-api', Wait.forLogMessage(/Transactions subscription started/, 1));
 const logger = await createLogger(config.logDir);
 await run(config, logger, dockerEnv);
-*/
