@@ -1,0 +1,256 @@
+pragma language_version >= 0.16.0;
+
+import CompactStandardLibrary;
+import CustomLibrary;
+
+export {Project, ProjectStatus, CoinInfo, QualifiedCoinInfo};
+
+enum ProjectStatus {active, withdrawn, closed};
+
+/* @protocolTVL: Mapping coin.color --> QualifiedCoinInfo -> keeps track of  dynamic coin input into the smart contract */
+export ledger protocolTVL: Map<Bytes<32>, QualifiedCoinInfo>;
+
+/* @projects: Mapping projectId --> Project -> keeps project that has been created onchain */
+export ledger projects: Map<Bytes<32>, Project>;
+
+/* Tracks investor commitment hashes anonymously using zero-knowledge proof */
+export ledger investors: MerkleTree<100, Bytes<32>>;
+
+
+struct Project {
+    id: Bytes<32>;
+    title: Opaque<"string">;
+    desc: Opaque<"string">;
+    owner: Bytes<32>;
+    investmentGoal: Uint<128>;
+    raised: Uint<128>;
+    investors: Uint<128>;
+    duration: Uint<128>;
+    creationDate: Uint<128>;
+    status: ProjectStatus;
+    coinType: Bytes<32>;
+};
+
+/* Enable utilization of off-chain generated secret key for id or commitment generation */
+witness local_secret_key(): Bytes<32>;
+
+/* @confirm_project_expiry --> Checks to see if a project is expired or still valid */
+witness confirm_project_expiration(duration: Uint<128>, startDate: Uint<128>): Boolean;
+/* Generates proof for a investor to show that he/she had invested to a least one project */
+witness findInvestor(commitment: Bytes<32>): MerkleTreePath<100, Bytes<32>>;
+
+
+/* Interaction for project creation and management */
+
+/* Allows creation of new projects */
+export circuit createProject(
+    _projectId: Bytes<32>,
+    _investmentGoal: Uint<128>,
+    _duration: Uint<128>,
+    _coinType: Bytes<32>,
+    _currentDate: Uint<128>,
+    _title: Opaque<"string">,
+    _desc: Opaque<"string">
+): []  {
+    const disclosedId = disclose(_projectId); 
+    assert (!projects.member(disclosedId), "Project with same ID already exists");
+    /* It generates a unique hash that represents the owner of the project without revealing its public key */ 
+    const ownersHash = generateOwnersPK(ownPublicKey().bytes, disclose(local_secret_key()), disclosedId);
+    const newProject = Project{   
+        ...default<Project>,
+        title: disclose(_title),
+        desc: disclose(_desc),
+        status: ProjectStatus.active,
+        investmentGoal: disclose(_investmentGoal),
+        duration: disclose(_duration),
+        owner: ownersHash,
+        coinType: disclose(_coinType),
+        creationDate: disclose(_currentDate)
+    };
+    
+    projects.insert(disclosedId, newProject);
+}
+
+/* Delete project from the onchain list */
+export circuit cancelProject(_projectId: Bytes<32>): []  {
+    const disclosedId = disclose(_projectId); 
+    
+    assert (projects.member(disclosedId), "Project with specified ID does not exist");
+    const projectToEnd = projects.lookup(disclosedId);
+    const reconstructedOwnersHash = generateOwnersPK(ownPublicKey().bytes, disclose(local_secret_key()), disclosedId);
+
+    assert (reconstructedOwnersHash == projectToEnd.owner, "Can not end this project: You are not the owner");
+    /* Removes the project from the list */
+    projects.remove(disclosedId);
+}
+
+export circuit withdrawProjectFunds(_projectId: Bytes<32>): []{
+    const disclosedId = disclose(_projectId); 
+    assert (projects.member(disclosedId), "Project with the specified ID does not exist");
+    
+    const projectToWithdrawFrom = projects.lookup(disclosedId);
+    const reconstructedOwnersHash = generateOwnersPK(ownPublicKey().bytes, disclose(local_secret_key()), disclosedId);
+
+    assert (reconstructedOwnersHash == projectToWithdrawFrom.owner, "Can not end this project: You are not the owner");
+    assert (projectToWithdrawFrom.raised >= projectToWithdrawFrom.investmentGoal || projectToWithdrawFrom.status == ProjectStatus.closed, "Project funds is less than the investment goal");
+
+    const sendResult = send(
+        protocolTVL.lookup(projectToWithdrawFrom.coinType), 
+        left<ZswapCoinPublicKey, ContractAddress>(ownPublicKey()),
+        projectToWithdrawFrom.investmentGoal
+    );
+
+    sendResult.change.is_some ? 
+    protocolTVL.insertCoin(projectToWithdrawFrom.coinType, sendResult.change.value, left<ZswapCoinPublicKey, ContractAddress>(ownPublicKey())) :
+    protocolTVL.remove(projectToWithdrawFrom.coinType);
+
+    /* Updates list of projects */
+    projects.remove(disclosedId);
+
+    const updateProject = Project{
+        ...projectToWithdrawFrom,
+        status: ProjectStatus.withdrawn
+    };
+
+    projects.insert(disclosedId, updateProject);
+}
+
+/* Close a project at any given point */
+export circuit endProject(_projectId: Bytes<32>): []  {
+    const disclosedId = disclose(_projectId); 
+    
+    assert (projects.member(disclosedId), "Project with specified ID does not exist");
+    const projectToEnd = projects.lookup(disclosedId);
+    const reconstructedOwnersHash = generateOwnersPK(ownPublicKey().bytes, disclose(local_secret_key()), disclosedId);
+
+    assert (reconstructedOwnersHash == projectToEnd.owner, "Can not end this project: You are not the owner");
+    
+    if(projectToEnd.raised > 0){
+        /* Sends funds before ending the project */
+        const sendResult = send(
+            protocolTVL.lookup(projectToEnd.coinType), 
+            left<ZswapCoinPublicKey, ContractAddress>(ownPublicKey()),
+            projectToEnd.raised
+        );
+
+        /* Updates balance */ 
+        sendResult.change.is_some ? 
+        protocolTVL.insertCoin(projectToEnd.coinType, sendResult.change.value, right<ZswapCoinPublicKey, ContractAddress>(kernel.self())) :
+        protocolTVL.remove(projectToEnd.coinType);
+    }
+
+    /* Removes the project from the list */
+    projects.insert(disclosedId, Project{
+        ...projectToEnd,
+        status: ProjectStatus.closed
+    });
+}   
+
+export circuit updateProject(
+    _projectId: Bytes<32>,
+    _title: Opaque<"string">,
+    _desc: Opaque<"string">,
+    _investmentGoal: Uint<128>,
+    _duration: Uint<128>
+    ): []{
+    const disclosedId = disclose(_projectId); 
+    assert (projects.member(disclosedId), "Project with the specified ID does not exist");
+    const projectToUpdate = projects.lookup(disclosedId);
+    assert (projectToUpdate.status != ProjectStatus.withdrawn || projectToUpdate.status != ProjectStatus.closed, "Can not edit project: This project has ended");
+    
+    const reconstructedOwnersHash = generateOwnersPK(ownPublicKey().bytes, disclose(local_secret_key()), disclosedId);
+    assert (reconstructedOwnersHash == projectToUpdate.owner, "Can not end this project: You are not the owner");
+
+    const updateProject = Project{   
+        ...projectToUpdate,
+        title: disclose(_title),
+        desc: disclose(_desc),
+        investmentGoal: disclose(_investmentGoal),
+        duration: disclose(_duration),
+    };
+    
+    projects.insert(disclosedId, updateProject);
+}
+
+
+/* Interactions for project investors */
+export circuit investProject(coin: CoinInfo, _projectId: Bytes<32>): []{
+    const disclosedCoin = disclose(coin);
+    const disclosedId = disclose(_projectId);
+    assert (projects.member(disclosedId), "Project with the specified ID does not exist");
+    const projectToInvest = projects.lookup(disclosedId);
+    assert (projectToInvest.raised < projectToInvest.investmentGoal, "Can not invest in this project: the investment objective of the project has been reached");
+    const isProjectActive = confirm_project_expiration(projectToInvest.duration, projectToInvest.creationDate);
+    assert (isProjectActive, "Project with specified ID is no longer active");
+    assert (projectToInvest.status != ProjectStatus.withdrawn || projectToInvest.status != ProjectStatus.closed, "Can not invest in the project: this project is finished");
+    assert (coin.color == projectToInvest.coinType, "Insufficient funds provided");
+    assert (coin.value <= projectToInvest.investmentGoal, "Amount is greater than investment goal");
+    receive(disclosedCoin);
+
+    const coinToInsert = protocolTVL.member(disclosedCoin.color) ? 
+    mergeCoinImmediate(protocolTVL.lookup(disclosedCoin.color), disclosedCoin) :
+    disclosedCoin;
+
+    protocolTVL.insertCoin(
+        disclosedCoin.color, 
+        coinToInsert, 
+        right<ZswapCoinPublicKey, ContractAddress>(kernel.self())
+    );
+
+    const investor = Investor{
+        id: disclose(local_secret_key()),
+        investment: disclosedCoin.value as Uint<32>,
+        coinType: disclosedCoin.color
+    };
+
+    /* Create a zero-knowledge commitment of the investor’s data (amount, currency, secret ID).
+    This commitment is stored in the investors Merkle Tree */
+    const investorCommit = generateCommit(investor, disclosedId);
+    investors.insert(investorCommit);
+
+    const updateProject = Project{
+        ...projectToInvest,
+        investors: (projectToInvest.investors + 1) as Uint<128>,
+        raised: (projectToInvest.raised + disclosedCoin.value) as Uint<128>
+    };
+
+    projects.insert(disclosedId, updateProject);
+}
+
+export circuit requestRefund(_projectId: Bytes<32>, refund_amount: Uint<32>, amountDeposited: Uint<32>): []{
+    const disclosedId = disclose(_projectId);
+
+    assert (projects.member(disclosedId), "Project with the specified ID does not exist");
+    const project = projects.lookup(disclosedId);
+    assert (project.status != ProjectStatus.withdrawn || project.status != ProjectStatus.closed, "Can not refund: This project has ended");
+
+    const investor = Investor{
+        id: disclose(local_secret_key()),
+        investment: disclose(amountDeposited),
+        coinType: project.coinType
+    };
+
+    const investorsCommit = generateCommit(investor, disclosedId);
+
+    const path = disclose(findInvestor(investorsCommit));
+
+    /* Verify that the commitment really belongs to the Merkle Tree of investors. */
+    assert(investors.checkRoot(merkleTreePathRoot<100, Bytes<32>>(path)), "You are not a valid investor for this project");
+    assert (refund_amount <= amountDeposited, "Can not withdraw more than deposited amount");
+    const sendResult = send(
+        protocolTVL.lookup(project.coinType), 
+        left<ZswapCoinPublicKey, ContractAddress>(ownPublicKey()),
+        disclose(refund_amount)
+    );
+
+    sendResult.change.is_some ? 
+    protocolTVL.insertCoin(project.coinType, sendResult.change.value, right<ZswapCoinPublicKey, ContractAddress>(kernel.self())) :
+    protocolTVL.remove(project.coinType);
+
+    const updateProject = Project {
+        ...project,
+        raised: (project.raised - disclose(refund_amount)) as Uint<128>
+    };
+
+    projects.insert(disclosedId, updateProject);
+}

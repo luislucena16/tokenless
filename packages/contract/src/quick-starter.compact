@@ -1,9 +1,0 @@
-pragma language_version >= 0.16.0;
-
-import CompactStandardLibrary;
-
-export ledger message: Bytes<12>;
-
-constructor() {
-  message = "Hello World!";
-}
