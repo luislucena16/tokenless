@@ -22,6 +22,12 @@ Tokenless is a natively Midnight-based asset tokenization system. It enables sec
 
 ---
 
+# Setup
+
+Follow these steps to get your environment ready:
+
+---
+
 ## 🛠️ Installation & Setup
 
 ### 1. Clone the repository
@@ -31,80 +37,102 @@ git clone https://github.com/luislucena16/tokenless.git
 cd tokenless
 ```
 
-### 2. Verify Node.js version
+### 2. Install dependencies
+
+```sh
+yarn install
+```
+
+### 3. Fetch ZK params and scripts
+
+Download and prepare the zero-knowledge (ZK) parameters required by the proof server:
+
+```sh
+cd packages/cli
+curl -O https://raw.githubusercontent.com/bricktowers/midnight-proof-server/main/fetch-zk-params.sh
+chmod +x fetch-zk-params.sh
+./fetch-zk-params.sh
+```
+
+### 4. Configure environment variables
+
+You must set the `COMPACT_HOME` variable so the Compact compiler can be found. This can be done temporarily (for your current session) or permanently (for all terminal sessions).
+
+See the [official documentation to install the Midnight compact compiler](https://docs.midnight.network/develop/tutorial/building/#midnight-compact-compiler).
+
+**For current session only:**
+```bash
+export COMPACT_HOME=/path/to/compact
+```
+
+**For permanent setup:**
+
+**macOS/Linux:**
+```bash
+# Add to your shell profile
+echo 'export COMPACT_HOME=/path/to/compact' >> ~/.bashrc
+echo 'export COMPACT_HOME=/path/to/compact' >> ~/.zshrc
+# Reload your shell profile
+source ~/.bashrc  # or source ~/.zshrc
+```
+
+**Windows (PowerShell):**
+```powershell
+# Set for current user
+[Environment]::SetEnvironmentVariable("COMPACT_HOME", "/path/to/compact", "User")
+# Or set for current session
+$env:COMPACT_HOME = "/path/to/compact"
+```
+
+**Windows (Command Prompt):**
+```cmd
+# Set for current user
+setx COMPACT_HOME "/path/to/compact"
+# Or set for current session
+set COMPACT_HOME=/path/to/compact
+```
+
+**After setting the variable, confirm it is set correctly:**
+```sh
+echo $COMPACT_HOME
+```
+You should see the path you configured as output.
+
+### 5. Build all packages
+
+```sh
+yarn build:all
+```
+
+### 6. Verify Node.js version
 
 ```sh
 node -v
 # Must be >= 22
 ```
 
-### 3. Install dependencies
+### 7. Launch Midnight infrastructure (TestNet)
 
 ```sh
-yarn install
+docker compose -f packages/cli/testnet.yml up -d
 ```
 
-### 4. Build all packages
+### 8. Configure and launch the UI
 
-```sh
-yarn build:all
-```
-> _This command builds all workspaces: `packages/contract`, `packages/api`, `packages/cli`, and `packages/ui`._
-
-### 3. Download and Prepare ZK Parameters (Required for Proofs)
-
-After building, you need to fetch the zero-knowledge (ZK) parameters required by the proof server. This is done via a helper script that you should place in the CLI package:
-
-```bash
-# Move to the CLI package directory
-cd packages/cli
-
-# Download the fetch-zk-params.sh script
-curl -O https://raw.githubusercontent.com/bricktowers/midnight-proof-server/main/fetch-zk-params.sh
-# or
-wget https://raw.githubusercontent.com/bricktowers/midnight-proof-server/main/fetch-zk-params.sh
-
-# Give execution permissions
-chmod +x fetch-zk-params.sh
-
-# Run the script to download ZK parameters
-./fetch-zk-params.sh
-```
-
-> **Note:**
-> - This script will generate a folder at `/.cache/midnight/zk-params` with all the required parameters for zero-knowledge proofs.
-> - **Why is this needed?** If you see an error like:
->   `Error in response: Proving(public parameters for k=16 not found in cache)`
->   it means the required parameters are missing.
-> - **This script is a workaround** to ensure your application works locally. The Midnight team is working on a more integrated solution for parameter management in the future.
-
-### 6. Launch Midnight infrastructure (TestNet)
-
-```sh
-docker compose -f testnet.yml up -d
-```
-> _The `-d` flag runs containers in the background. You should see output like:_
-> ```
->  ✔ Container tokenless-node          Started
->  ✔ Container tokenless-proof-server  Started
->  ✔ Container tokenless-indexer       Started
-> ```
-
-### 7. Configure and launch the UI
-
-#### 7.1 Environment variables
+#### 8.1 Environment variables
 
 Create a `.env` file in `packages/ui` with:
 
-```
+```env
 VITE_NETWORK_ID=TestNet
 VITE_LOGGING_LEVEL=trace
 ```
 
-#### 7.2 Build and start
+#### 8.2 Build and start
 
 ```sh
-npx turbo run build
+cd packages/ui
+yarn build
 yarn start
 ```
 
@@ -114,11 +142,72 @@ Go to [http://localhost:8080](http://localhost:8080).
 
 ## 💡 How It Works
 
-1. **User connects their wallet** (Lace Midnight-compatible).
-2. **Frontend initializes providers** and connects to the contract (deploy or join).
-3. **Investments and actions** are performed using zero-knowledge proofs, never exposing sensitive data.
-4. **Contract state** (projects, balances, etc.) is queried and updated in real time using observables.
-5. **The UI never accesses or displays private data:** everything is managed via ZKPs and controlled access logic.
+### 1. Install Lace Beta Wallet
+
+To interact with the dApp, you must install the [Lace Beta wallet](https://chromewebstore.google.com/detail/lace-beta/hgeekaiplokcnmakghbdfbgnlfheichg) extension, which is compatible with Midnight and then click to `Connect Wallet`.
+> ![Connect Wallet](docs/images/connect-wallet.png)
+
+---
+
+### 2. Connect your wallet
+
+When you click **Connect Wallet** in the interface. The dApp will automatically detect Lace Beta and prompt you to authorize the connection.
+> ![Connect Wallet UI](docs/images/connect-wallet-auth.png)
+
+---
+
+### 3. Choose: Join an existing contract or deploy a new one
+
+On the main screen you can:
+- **Join Existing Contract:** Join a contract that already exists (ideal for exploring pre-created projects).
+- **Deploy New Contract:** Deploy your own contract from scratch.
+
+> ![Join or Deploy](docs/images/join-or-deploy.png)
+
+---
+
+#### 👉 If you choose **Join Existing Contract**
+
+You can join a demo contract with existing projects using the following address:
+
+```
+0200e604aad6e0af78d988886ffd20a9742dc09514fe3542ab32f21907ad5463974a
+```
+
+Paste this address in the input field and click **Join**.
+
+> ![Join Process](docs/images/join-process.png)
+
+If you joined successfully, you should see something like this:
+
+> ![Demo Projects](docs/images/demo-projects.png)
+
+---
+
+#### 👉 If you choose **Deploy New Contract**
+
+The dApp will deploy a new contract on the Midnight network. You will be prompted to sign the deployment with your wallet:
+
+> ![Sign Deploy](docs/images/connect-wallet-sign.png)
+
+Once deployed, you will see an empty project board, ready for you to create your own private investment projects:
+
+> ![Empty Projects](docs/images/empty-projects.png)
+
+---
+
+### 4. Interact with projects
+
+- **Explore existing projects** (if you joined a contract with projects).
+- **Create new projects** if you deployed your own contract.
+- **Invest, withdraw funds, or request refunds** using zero-knowledge proofs (ZKPs), without exposing sensitive data.
+
+---
+
+### 5. Full privacy
+
+- Contract state (projects, balances, etc.) is queried and updated in real time using observables.
+- **The UI never accesses or displays private data:** Everything is managed via ZKPs and controlled access logic.
 
 ---
 
