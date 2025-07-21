@@ -37,6 +37,15 @@ git clone https://github.com/luislucena16/tokenless.git
 cd tokenless
 ```
 
+### 3. Verify Node.js version
+
+```sh
+node -v
+# Must be >= 22
+```
+If not, install the latest Node.js from [nodejs.org](https://nodejs.org/).
+
+
 ### 2. Install dependencies
 
 ```sh
@@ -104,13 +113,6 @@ You should see the path you configured as output.
 yarn build:all
 ```
 
-### 6. Verify Node.js version
-
-```sh
-node -v
-# Must be >= 22
-```
-
 ### 7. Launch Midnight infrastructure (TestNet)
 
 ```sh
@@ -132,7 +134,7 @@ VITE_LOGGING_LEVEL=trace
 
 ```sh
 cd packages/ui
-yarn build
+npx turbo run build
 yarn start
 ```
 
