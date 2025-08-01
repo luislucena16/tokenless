@@ -63,49 +63,66 @@ chmod +x fetch-zk-params.sh
 ./fetch-zk-params.sh
 ```
 
-### 4. Configure environment variables
+### 4. Configure Compact Compiler
 
-You must set the `COMPACT_HOME` variable so the Compact compiler can be found. This can be done temporarily (for your current session) or permanently (for all terminal sessions).
+To Install the compiler in your teminal follow these steps:
 
-See the [official documentation to install the Midnight compact compiler](https://docs.midnight.network/develop/tutorial/building/#midnight-compact-compiler).
+**Download compiler**
 
-**For current session only:**
+This command will download and run a shell script. It will instruct you how to add the binary directory it uses to your PATH environment variable.
+
 ```bash
-export COMPACT_HOME=/path/to/compact
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
 ```
 
-**For permanent setup:**
+**Update compiler**
 
-**macOS/Linux:**
+Once you've done this, the compact command line tool is available to use. This tool has a number of useful subcommands that can be invoked. For instance, to update the toolchain to the latest version, you will run the command:
+
 ```bash
-# Add to your shell profile
-echo 'export COMPACT_HOME=/path/to/compact' >> ~/.bashrc
-echo 'export COMPACT_HOME=/path/to/compact' >> ~/.zshrc
-# Reload your shell profile
-source ~/.bashrc  # or source ~/.zshrc
+compact update
 ```
 
-**Windows (PowerShell):**
-```powershell
-# Set for current user
-[Environment]::SetEnvironmentVariable("COMPACT_HOME", "/path/to/compact", "User")
-# Or set for current session
-$env:COMPACT_HOME = "/path/to/compact"
+The output will look something like this (on an Apple Silicon macOS machine, for instance):
+
+```bash
+compact: aarch64-darwin -- 0.24.0 -- installed
+compact: aarch64-darwin -- 0.24.0 -- default.
 ```
 
-**Windows (Command Prompt):**
-```cmd
-# Set for current user
-setx COMPACT_HOME "/path/to/compact"
-# Or set for current session
-set COMPACT_HOME=/path/to/compact
+**Check new version available**
+
+You can check if there is a new version available using the check subcommand like this:
+
+```bash
+compact check
 ```
 
-**After setting the variable, confirm it is set correctly:**
-```sh
-echo $COMPACT_HOME
+If there is a new version available, you will see something like:
+
 ```
-You should see the path you configured as output.
+compact: aarch64-darwin -- Update Available -- 0.24.0
+compact: Latest version available: 0.24.0.
+```
+
+This is reporting that you are on version 0.24.0 and that 0.25.0 is available.
+
+**Note:**
+You will not actually see this output until there is a new version available. Instead, you will see that you are on the latest version:
+
+```bash
+compact: aarch64-darwin -- Up to date -- 0.24.0
+```
+
+**Invoking the Compiler**
+
+In addition to keeping the toolchain updated, the compact tool will also be the official supported way to invoke all the toolchain tools themselves. For the time being, the only such tool is the compiler, but we will be building out more tools in the future. The compiler can be invoked with the compile subcommand:
+
+```bash
+compact compile <contract file> <output directory>
+```
+
+You can see and learn more information, commands about the compiler here: [compact developer tools](https://docs.midnight.network/blog/compact-developer-tools)
 
 ### 5. Build all packages
 
