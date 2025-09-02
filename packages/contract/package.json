@@ -16,7 +16,7 @@
     }
   },
   "scripts": {
-    "compact": "run-compactc src/tokenless.compact ./src/managed/tokenless",
+    "compact": "compact compile src/tokenless.compact ./src/managed/tokenless",
     "build": "rm -rf dist && tsc --project tsconfig.build.json && mkdir -p dist/managed && cp -R ./src/managed/tokenless ./dist/managed/tokenless && cp ./src/tokenless.compact dist",
     "lint": "eslint src",
     "typecheck": "tsc -p tsconfig.json --noEmit",
