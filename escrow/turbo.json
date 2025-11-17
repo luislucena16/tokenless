@@ -1,0 +1,35 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    ".prettierrc.json"
+  ],
+  "tasks": {
+    "typecheck": {
+      "dependsOn": ["^build", "compact"],
+      "inputs": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.mts", "tsconfig.json"],
+      "outputs": []
+    },
+    "compact": {
+      "dependsOn": ["^build"],
+      "env": ["COMPACT_HOME"],
+      "inputs": ["src/**/*.compact"],
+      "outputs": ["src/managed/**", "src/gen/**", "gen/**"]
+    },
+    "build": {
+      "dependsOn": ["^build", "compact", "typecheck"],
+      "inputs": ["src/**/*.ts", "src/**/*.mts", "src/**/*.tsx", "!src/**/*.test.ts", "!tests/**/*.ts", "tsconfig.json", "tsconfig.build.json", ".env"],
+      "outputs": ["dist/**"]
+    },
+    "lint": {
+      "dependsOn": ["compact", "^build", "typecheck"],
+      "inputs": ["src/**/*.ts", "src/**/*.mts", "src/**/*.tsx", ".eslintrc.cjs"]
+    },
+    "clean": {
+      "cache": false
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
