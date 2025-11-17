@@ -1,0 +1,19 @@
+{
+  "name": "@escrow/escrow-compact",
+  "description": "Compact fetcher",
+  "author": "IOG",
+  "license": "Apache-2.0",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "yarn@4.0.0",
+  "bin": {
+    "compact-compile": "src/compact-compile.cjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "eslint": "^8.52.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.2.2"
+  }
+}
