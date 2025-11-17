@@ -76,3 +76,4 @@ escrow/
 - Contributor addresses must be `ZswapCoinPublicKey` format (32 bytes, hex string)
 - The contract uses an empty private state
 - Treasury is managed using `QualifiedCoinInfo`
+- Contract address already deployed on TestNet: `020027a770b658fc040c3435fdf5f59b90c2b3430911d76ef52cd0017a087b8c7984`
