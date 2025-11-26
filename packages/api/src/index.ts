@@ -230,7 +230,7 @@ export class TokenlessAPI implements DeployedTokenlessAPI {
     _projectID: string,
     amount: number
   ): Promise<FinalizedCallTxData<TokenlessContract, "investProject">> {
-    this.logger?.info(`investing project with id ${_projectID}...`);
+    this.logger?.info(`Investing project with id ${_projectID}...`);
 
     const txData = await this.allReadyDeployedContract.callTx.investProject(
       this.coin(amount),
