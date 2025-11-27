@@ -56,10 +56,23 @@ yarn install
 
 Download and prepare the zero-knowledge (ZK) parameters required by the proof server:
 
+- Navigate to the cli folder:
 ```sh
 cd packages/cli
+```
+
+- Download the zk parameters in the current folder (packages/cli):
+```bash
 curl -O https://raw.githubusercontent.com/bricktowers/midnight-proof-server/main/fetch-zk-params.sh
+```
+
+- Grant permissions to the script:
+```bash
 chmod +x fetch-zk-params.sh
+```
+
+- Run the script:
+```bash
 ./fetch-zk-params.sh
 ```
 
