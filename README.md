@@ -150,9 +150,7 @@ VITE_LOGGING_LEVEL=trace
 #### 8.2 Build and start
 
 ```sh
-cd packages/ui
-npx turbo run build
-yarn start
+cd packages/ui && npx turbo run build && yarn start
 ```
 
 Go to [http://localhost:8080](http://localhost:8080).
